@@ -40,7 +40,8 @@ dependencies {
     implementation("org.pytorch:pytorch_android_lite:1.13.1")
     implementation("org.pytorch:pytorch_android_torchvision_lite:1.13.1")
 // Use the most recent version of Camerax, currently that is alpha86.
-    implementation("androidx.camera:camera-core:1.8.0-alpha86")
-    implementation("androidx.camera:camera-camera2:1.0.0-alpha86")
+//    implementation("androidx.camera:camera-core:1.8.0-alpha86")
+//    implementation("androidx.camera:camera-camera2:1.0.0-alpha86")
+    implementation("androidx.camera:camera-core:1.3.0")
 
 }
