@@ -1,6 +1,7 @@
 package com.example.objectdetection;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,11 +15,10 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
+import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.PreviewConfig;
-import androidx.camera.core.impl.PreviewConfig;
 import androidx.core.app.ActivityCompat;
 
 public abstract class AbstractCameraXActivity<R> extends BaseModuleActivity {
@@ -49,14 +49,13 @@ public abstract class AbstractCameraXActivity<R> extends BaseModuleActivity {
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_CAMERA_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(
-                                this,
-                                "You can't use object detection example without granting CAMERA permission",
-                                Toast.LENGTH_LONG)
+                Toast.makeText(this, "You can't use object detection example without granting CAMERA permission", Toast.LENGTH_LONG)
                         .show();
                 finish();
             } else {
@@ -68,7 +67,6 @@ public abstract class AbstractCameraXActivity<R> extends BaseModuleActivity {
     private void setupCameraX() {
         final TextureView textureView = getCameraPreviewTextureView();
         final PreviewConfig previewConfig = new PreviewConfig.Builder().build();
-        PreviewConfig = Preview.Builder
         final Preview preview = new Preview(previewConfig);
         preview.setOnPreviewOutputUpdateListener(output -> textureView.setSurfaceTexture(output.getSurfaceTexture()));
 

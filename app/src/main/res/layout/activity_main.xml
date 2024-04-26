@@ -57,13 +57,15 @@
         android:id="@+id/testButton"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/selectButton"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/detectButton" />
+        app:layout_constraintTop_toBottomOf="@+id/detectButton"
+        app:layout_constraintVertical_bias="0.1" />
 
     <Button
         android:id="@+id/selectButton"
@@ -87,5 +89,15 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/selectButton"
         app:layout_constraintTop_toTopOf="@+id/selectButton" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/selectButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

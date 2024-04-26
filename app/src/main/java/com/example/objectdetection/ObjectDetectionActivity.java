@@ -12,9 +12,7 @@ import android.view.TextureView;
 import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.OptIn;
 import androidx.annotation.WorkerThread;
-import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageProxy;
 
 import org.pytorch.IValue;
@@ -28,13 +26,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetectionActivity.AnalysisResult>{
+public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetectionActivity.AnalysisResult> {
     private Module mModule = null;
     private ResultView mResultView;
 
     static class AnalysisResult {
         private final ArrayList<Result> mResults;
-
         public AnalysisResult(ArrayList<Result> results) {
             mResults = results;
         }
@@ -82,7 +79,7 @@ public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetec
         return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
 
-    @OptIn(markerClass = ExperimentalGetImage.class) @Override
+    @Override
     @WorkerThread
     @Nullable
     protected AnalysisResult analyzeImage(ImageProxy image, int rotationDegrees) {

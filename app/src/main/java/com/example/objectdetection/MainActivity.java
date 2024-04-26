@@ -2,6 +2,7 @@ package com.example.objectdetection;
 
 import android.Manifest;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -14,15 +15,20 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
@@ -41,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
-
     private int mImageIndex = 0;
     private String[] mTestImages = {"test1.png", "test2.jpg", "test3.png"};
 
@@ -49,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private ResultView mResultView;
     private Button mButtonDetect;
     private ProgressBar mProgressBar;
+    private TextView mObjectCountTextView;
     private Bitmap mBitmap = null;
     private Module mModule = null;
     private float mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY;
@@ -78,10 +84,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            Log.e("Permission", "READ_EXTERNAL_STORAGE permission requested");
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+            Log.e("Permission", "CAMERA permission requested");
         }
 
         setContentView(R.layout.activity_main);
@@ -97,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mImageView.setImageBitmap(mBitmap);
         mResultView = findViewById(R.id.resultView);
         mResultView.setVisibility(View.INVISIBLE);
+
 
         final Button buttonTest = findViewById(R.id.testButton);
         buttonTest.setText(("Test Image 1/3"));
@@ -148,12 +157,19 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         final Button buttonLive = findViewById(R.id.liveButton);
         buttonLive.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
-                final Intent intent = new Intent(MainActivity.this, ObjectDetectionActivity.class);
+                final Intent intent = new Intent(MainActivity.this,ObjectDetectionActivity.class);
                 startActivity(intent);
             }
         });
 
+        // Trong onCreate(), yêu cầu quyền WRITE_EXTERNAL_STORAGE
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+
+        mObjectCountTextView = findViewById(R.id.textView);
         mButtonDetect = findViewById(R.id.detectButton);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mButtonDetect.setOnClickListener(new View.OnClickListener() {
@@ -236,9 +252,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         IValue[] outputTuple = mModule.forward(IValue.from(inputTensor)).toTuple();
         final Tensor outputTensor = outputTuple[0].toTensor();
         final float[] outputs = outputTensor.getDataAsFloatArray();
-        final ArrayList<Result> results =  PrePostProcessor.outputsToNMSPredictions(outputs, mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY);
+        final ArrayList<Result> results = PrePostProcessor.outputsToNMSPredictions(outputs, mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY);
 
         runOnUiThread(() -> {
+            int objectCount = results.size();
+            mObjectCountTextView.setText("Số lượng đối tượng: " + objectCount);
+
             mButtonDetect.setEnabled(true);
             mButtonDetect.setText(getString(R.string.detect));
             mProgressBar.setVisibility(ProgressBar.INVISIBLE);
