@@ -16,7 +16,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private ImageView mImageView;
     private ResultView mResultView;
     private Button mButtonDetect;
+    private Button mSave;
     private ProgressBar mProgressBar;
     private TextView mObjectCountTextView;
     private Bitmap mBitmap = null;
@@ -64,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         if (file.exists() && file.length() > 0) {
             return file.getAbsolutePath();
         }
-
         try (InputStream is = context.getAssets().open(assetName)) {
             try (OutputStream os = new FileOutputStream(file)) {
                 byte[] buffer = new byte[4 * 1024];
@@ -90,6 +93,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
             Log.e("Permission", "CAMERA permission requested");
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
 
         setContentView(R.layout.activity_main);
@@ -172,8 +179,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mObjectCountTextView = findViewById(R.id.textView);
         mButtonDetect = findViewById(R.id.detectButton);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+
         mButtonDetect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
                 mButtonDetect.setEnabled(false);
                 mProgressBar.setVisibility(ProgressBar.VISIBLE);
                 mButtonDetect.setText(getString(R.string.run_model));
@@ -192,6 +201,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         });
 
+
+        mSave = findViewById(R.id.saveButton);
+
         try {
             mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "yolov5s.torchscript.ptl"));
             BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
@@ -206,6 +218,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             Log.e("Object Detection", "Error reading assets", e);
             finish();
         }
+
+
     }
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -264,6 +278,43 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             mResultView.setResults(results);
             mResultView.invalidate();
             mResultView.setVisibility(View.VISIBLE);
+
+            mSave.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    saveDetectedImage();
+                }
+            });
+
         });
+    }
+
+    private void saveDetectedImage() {
+        Bitmap originalBitmap = mBitmap;
+        Bitmap resultBitmap = Bitmap.createBitmap(mResultView.getWidth(), mResultView.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(resultBitmap);
+
+        // Vẽ ảnh gốc lên resultBitmap
+        Matrix matrix = new Matrix();
+        matrix.postScale(mIvScaleX, mIvScaleY);
+        matrix.postTranslate(mStartX, mStartY);
+        canvas.drawBitmap(originalBitmap, matrix, null);
+
+        // Vẽ kết quả detect lên resultBitmap
+        mResultView.draw(canvas);
+
+        String fileName = "detected_image_" + System.currentTimeMillis() + ".jpg";
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File imageFile = new File(storageDir, fileName);
+
+        try {
+            FileOutputStream out = new FileOutputStream(imageFile);
+            resultBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+            Toast.makeText(this, "Ảnh đã được lưu vào bộ nhớ điện thoại", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
