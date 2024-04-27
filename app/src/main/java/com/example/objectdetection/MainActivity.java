@@ -2,7 +2,6 @@ package com.example.objectdetection;
 
 import android.Manifest;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -16,15 +15,11 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,8 +27,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-//import com.bumptech.glide.Glide;
 
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
@@ -53,7 +46,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private int mImageIndex = 0;
-    private String[] mTestImages = {"test1.png", "test2.jpg", "test3.png"};
+    private String[] mTestImages = {"test1.png", "test2.png", "test3.png","test4.png","test5.png"};
 
     private ImageView mImageView;
     private ResultView mResultView;
@@ -117,12 +110,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
 
         final Button buttonTest = findViewById(R.id.testButton);
-        buttonTest.setText(("Test Image 1/3"));
+        buttonTest.setText(("Test Image"));
         buttonTest.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mResultView.setVisibility(View.INVISIBLE);
                 mImageIndex = (mImageIndex + 1) % mTestImages.length;
-                buttonTest.setText(String.format("Text Image %d/%d", mImageIndex + 1, mTestImages.length));
+                buttonTest.setText(String.format("Image %d/%d", mImageIndex + 1, mTestImages.length));
 
                 try {
                     mBitmap = BitmapFactory.decodeStream(getAssets().open(mTestImages[mImageIndex]));
