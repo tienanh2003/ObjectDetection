@@ -66,6 +66,8 @@
         android:layout_width="230dp"
         android:layout_height="100dp"
         android:text="Get Started"
+        android:textSize="20sp"
+        android:background="@drawable/custom_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.558"
